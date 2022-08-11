@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Moq;
+using Microsoft.QualityTools.Testing.Fakes;
 
 namespace TimeProvider.Tests
 {
@@ -15,17 +16,21 @@ namespace TimeProvider.Tests
         [TestMethod()]
         public void Get_Next_Minute_From_Current_Time()
         {
-            // Arrange
-            var dateTimeNowProvider = new Mock<IDateTimeNowProvider>();
-            dateTimeNowProvider.Setup(x => x.DateTimeNow).Returns(new DateTime(2022, 6, 12, 11, 15, 0));
-            TimeProvider timeProvider = new TimeProvider(dateTimeNowProvider.Object);
+            using (ShimsContext.Create())
+            {
+                // Arrange
+                System.Fakes.ShimDateTime.NowGet =
+                                () =>
+                                { return new DateTime(2022, 6, 12, 11, 15, 0); };
 
-            // Act
-            DateTime actual = timeProvider.GetNextOneMinuteFromNow();
+                // Act
+                TimeProvider timeProvider = new TimeProvider();
+                DateTime actual = timeProvider.GetNextOneMinuteFromNow();
 
-            // Assert
-            DateTime exptected = new DateTime(2022, 6, 12, 11, 16, 0);
-            Assert.AreEqual(exptected, actual);
+                // Assert
+                DateTime expected = new DateTime(2022, 6, 12, 11, 16, 0);
+                Assert.AreEqual(expected, actual);
+            }
         }
     }
 }
